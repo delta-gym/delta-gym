@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-sidebar: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text);
+}
+
+:root {
+  /* Colores base por defecto (Light Mode) */
+  --background: #f8fafc; /* slate-50 */
+  --foreground: #0f172a; /* slate-900 */
+  
+  /* Variables White Label (se sobreescribirán dinámicamente) */
+  --primary: #2563eb; /* blue-600 */
+  --secondary: #475569; /* slate-600 */
+  --accent: #f59e0b; /* amber-500 */
+  
+  /* Componentes Específicos */
+  --sidebar-bg: #1e293b; /* slate-800 */
+  --sidebar-text: #f8fafc;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f172a;
+    --foreground: #f8fafc;
+    --sidebar-bg: #020617; /* slate-950 */
+    --sidebar-text: #f8fafc;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), sans-serif;
+}
+

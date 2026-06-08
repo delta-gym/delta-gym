@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Modo prueba: permite lectura/escritura durante desarrollo.
+    // ¡IMPORTANTE! Cambiar antes de producción.
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // ── Reglas de producción (comentadas por ahora) ──────────────────────────
+    //
+    // match /gyms/{gymId} {
+    //   allow read, write: if request.auth != null && request.auth.token.gymId == gymId;
+    // }
+    // match /socios/{socioId} {
+    //   allow read, write: if request.auth != null
+    //     && request.auth.token.gymId == resource.data.gymId;
+    // }
+    // match /planes/{planId} {
+    //   allow read, write: if request.auth != null
+    //     && request.auth.token.gymId == resource.data.gymId;
+    // }
+    // match /pagos/{pagoId} {
+    //   allow read, write: if request.auth != null
+    //     && request.auth.token.gymId == resource.data.gymId;
+    // }
+    // match /accesos/{accesoId} {
+    //   allow read, write: if request.auth != null
+    //     && request.auth.token.gymId == resource.data.gymId;
+    // }
+  }
+}
