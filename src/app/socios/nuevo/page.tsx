@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { usePlanes } from '@/lib/hooks'
-import { createSocio, GYM_ID } from '@/lib/firestore'
+import { createSocio } from '@/lib/firestore'
+import { useAuth } from '@/components/auth/AuthProvider'
 import { formatRut, validateRut } from '@/lib/rut'
 
 export default function NuevoSocioPage() {
   const router = useRouter()
+  const { gymId } = useAuth()
   const { planes } = usePlanes()
   const [guardando, setGuardando] = useState(false)
   const [form, setForm] = useState({
@@ -37,6 +39,11 @@ export default function NuevoSocioPage() {
       return
     }
 
+    if (!gymId) {
+      alert('Error: No se pudo identificar el gimnasio actual.')
+      return
+    }
+
     setGuardando(true)
     try {
       const planSeleccionado = planes.find((p) => p.id === form.planId)
@@ -57,8 +64,8 @@ export default function NuevoSocioPage() {
         qrCode: `SOC-${Date.now()}`,
         ultimoPago: '',
         montoPendiente: 0,
-        gymId: GYM_ID,
-        sexo: form.sexo ? (form.sexo as 'M' | 'F' | 'Otro') : undefined,
+        gymId: gymId,
+        sexo: form.sexo as 'M' | 'F' | 'Otro' | undefined,
         fechaNacimiento: form.fechaNacimiento || undefined,
       })
       router.push('/socios')

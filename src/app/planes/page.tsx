@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { usePlanes, useSocios } from '@/lib/hooks'
-import { createPlan, updatePlan, GYM_ID } from '@/lib/firestore'
+import { createPlan, updatePlan } from '@/lib/firestore'
 import type { Plan } from '@/lib/firestore'
+import { useAuth } from '@/components/auth/AuthProvider'
 
 export default function PlanesPage() {
   const { planes, refetch: refetchPlanes } = usePlanes()
   const { socios } = useSocios()
+  const { gymId } = useAuth()
   const [tab, setTab] = useState<'planes' | 'membresias'>('planes')
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -41,7 +43,8 @@ export default function PlanesPage() {
       if (editingPlan && editingPlan.id) {
         await updatePlan(editingPlan.id, { ...form })
       } else {
-        await createPlan({ ...form, gymId: GYM_ID })
+        if (!gymId) return alert('Error: no se detectó el ID del gimnasio.')
+        await createPlan({ ...form, gymId })
       }
       await refetchPlanes()
       setModalOpen(false)

@@ -2,9 +2,11 @@
 
 import { useState, useRef } from 'react'
 import { useSocios, useAccesosHoy } from '@/lib/hooks'
-import { registrarAcceso, GYM_ID } from '@/lib/firestore'
+import { registrarAcceso } from '@/lib/firestore'
+import { useAuth } from '@/components/auth/AuthProvider'
 
 export default function QRPage() {
+  const { gymId } = useAuth()
   const { socios } = useSocios()
   const { accesos } = useAccesosHoy()
   const [qrInput, setQrInput] = useState('')
@@ -32,7 +34,7 @@ export default function QRPage() {
       foto: socio.foto,
       timestamp: new Date().toISOString(),
       estadoMembresia: socio.estado,
-      gymId: GYM_ID,
+      gymId: gymId || '',
     })
     setResultado({ tipo: 'ok', socio, mensaje: '✓ Acceso autorizado' })
   }

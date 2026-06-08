@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Socio } from '@/lib/firestore'
-import { updateSocio, createPago, GYM_ID } from '@/lib/firestore'
+import { updateSocio, createPago } from '@/lib/firestore'
 import { usePlanes } from '@/lib/hooks'
+import { useAuth } from '@/components/auth/AuthProvider'
 
 const estadoConfig = {
   activo: { label: 'Activo', class: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
@@ -15,6 +16,7 @@ const estadoConfig = {
 export default function SocioDetailClient({ socio }: { socio: Socio }) {
   const router = useRouter()
   const cfg = estadoConfig[socio.estado]
+  const { gymId } = useAuth()
   
   const { planes } = usePlanes()
   const [modalRenovar, setModalRenovar] = useState(false)
@@ -68,7 +70,7 @@ export default function SocioDetailClient({ socio }: { socio: Socio }) {
           fecha: fechaPago,
           responsable: 'Admin',
           plan: plan.nombre,
-          gymId: GYM_ID,
+          gymId: gymId || '',
           notas: abono < plan.precio ? `Pago parcial. Valor del plan: $${plan.precio}` : ''
         })
       }

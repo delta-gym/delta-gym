@@ -2,32 +2,33 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Modo prueba: permite lectura/escritura durante desarrollo.
-    // ¡IMPORTANTE! Cambiar antes de producción.
-    match /{document=**} {
-      allow read, write: if true;
+    // Función para obtener el gymId del usuario que hace la petición
+    function getUserGymId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.gymId;
     }
+
+    // Regla global de seguridad: Solo permitir lectura/escritura si el usuario está autenticado
+    // y si el documento que intenta acceder tiene su mismo gymId.
     
-    // ── Reglas de producción (comentadas por ahora) ──────────────────────────
-    //
-    // match /gyms/{gymId} {
-    //   allow read, write: if request.auth != null && request.auth.token.gymId == gymId;
-    // }
-    // match /socios/{socioId} {
-    //   allow read, write: if request.auth != null
-    //     && request.auth.token.gymId == resource.data.gymId;
-    // }
-    // match /planes/{planId} {
-    //   allow read, write: if request.auth != null
-    //     && request.auth.token.gymId == resource.data.gymId;
-    // }
-    // match /pagos/{pagoId} {
-    //   allow read, write: if request.auth != null
-    //     && request.auth.token.gymId == resource.data.gymId;
-    // }
-    // match /accesos/{accesoId} {
-    //   allow read, write: if request.auth != null
-    //     && request.auth.token.gymId == resource.data.gymId;
-    // }
+    // 1. Colección de usuarios (permitir leer/escribir su propio perfil)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 2. Colección de configuración del gimnasio
+    match /gyms/{gymId} {
+      allow read: if request.auth != null && getUserGymId() == gymId;
+      allow write: if request.auth != null && getUserGymId() == gymId;
+    }
+
+    // 3. Colecciones de datos (socios, planes, pagos, accesos, etc.)
+    // Deben coincidir con el gymId del usuario.
+    match /{collection}/{docId} {
+      allow read, delete: if request.auth != null 
+        && getUserGymId() == resource.data.gymId;
+        
+      allow create, update: if request.auth != null 
+        && getUserGymId() == request.resource.data.gymId;
+    }
   }
 }

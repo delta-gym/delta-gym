@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { useSocios, usePagos, useGastos, useCajaSesion } from '@/lib/hooks'
-import { createPago, createGasto, abrirCaja, cerrarCaja, GYM_ID, updateSocio } from '@/lib/firestore'
+import { createPago, createGasto, abrirCaja, cerrarCaja, updateSocio } from '@/lib/firestore'
+import { useAuth } from '@/components/auth/AuthProvider'
 
 const metodos = ['Efectivo', 'Transferencia', 'Tarjeta']
 
 export default function CajaPage() {
+  const { gymId } = useAuth()
   const { socios, refetch: refetchSocios } = useSocios()
   const { pagos, refetch: refetchPagos } = usePagos()
   const { gastos, refetch: refetchGastos } = useGastos()
@@ -30,7 +32,7 @@ export default function CajaPage() {
         montoInicial: Number(formApertura.montoInicial),
         responsableApertura: 'Admin',
         estado: 'abierta',
-        gymId: GYM_ID
+        gymId: gymId || ''
       })
       refetchSesion()
       alert('Caja abierta con éxito')
@@ -88,7 +90,7 @@ export default function CajaPage() {
         fecha: new Date().toISOString().split('T')[0],
         responsable: 'Admin',
         plan: socio.planActual,
-        gymId: GYM_ID,
+        gymId: gymId || '',
         notas: formPago.notas,
       })
 
@@ -121,8 +123,8 @@ export default function CajaPage() {
         descripcion: formGasto.descripcion,
         monto: Number(formGasto.monto),
         fecha: new Date().toISOString().split('T')[0],
-        responsable: formGasto.responsable,
-        gymId: GYM_ID
+        responsable: 'Admin',
+        gymId: gymId || ''
       })
       alert('✅ Gasto registrado')
       setFormGasto({ descripcion: '', monto: '', responsable: 'Admin' })

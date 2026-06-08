@@ -41,11 +41,11 @@ export interface Socio {
 export interface GymConfig {
   id?: string
   nombre: string
-  logo: string
-  direccion: string
-  telefono: string
-  whatsapp: string
-  emailSoporte: string
+  logo?: string
+  direccion?: string
+  telefono?: string
+  whatsapp?: string
+  emailSoporte?: string
   colores: {
     primary: string
     secondary: string
@@ -96,13 +96,35 @@ export interface Acceso {
   gymId: string
 }
 
-// ─── GymId por defecto (multi-tenant, se cambiará por el del usuario auth) ───
-export const GYM_ID = 'gym-delta'
+export interface Gasto {
+  id?: string
+  descripcion: string
+  monto: number
+  fecha: string
+  responsable: string
+  gymId: string
+  creadoEn?: Timestamp
+}
+
+export interface CajaSesion {
+  id?: string
+  fechaApertura: string
+  montoInicial: number
+  fechaCierre?: string
+  montoFinal?: number
+  diferencia?: number
+  responsableApertura: string
+  responsableCierre?: string
+  estado: 'abierta' | 'cerrada'
+  gymId: string
+}
+
+// ─── Notas: Ya no hay GYM_ID global hardcodeado. Todas las funciones exigen gymId. ───
 
 // ─── Socios ───────────────────────────────────────────────────────────────────
 
-export async function getSocios(): Promise<Socio[]> {
-  const q = query(collection(db, 'socios'), where('gymId', '==', GYM_ID))
+export async function getSocios(gymId: string): Promise<Socio[]> {
+  const q = query(collection(db, 'socios'), where('gymId', '==', gymId))
   const snap = await getDocs(q)
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Socio))
 }
@@ -131,8 +153,8 @@ export async function deleteSocio(id: string): Promise<void> {
 
 // ─── Planes ───────────────────────────────────────────────────────────────────
 
-export async function getPlanes(): Promise<Plan[]> {
-  const q = query(collection(db, 'planes'), where('gymId', '==', GYM_ID))
+export async function getPlanes(gymId: string): Promise<Plan[]> {
+  const q = query(collection(db, 'planes'), where('gymId', '==', gymId))
   const snap = await getDocs(q)
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Plan))
 }
@@ -148,8 +170,8 @@ export async function updatePlan(id: string, data: Partial<Plan>): Promise<void>
 
 // ─── Pagos ────────────────────────────────────────────────────────────────────
 
-export async function getPagos(): Promise<Pago[]> {
-  const q = query(collection(db, 'pagos'), where('gymId', '==', GYM_ID), orderBy('fecha', 'desc'))
+export async function getPagos(gymId: string): Promise<Pago[]> {
+  const q = query(collection(db, 'pagos'), where('gymId', '==', gymId), orderBy('fecha', 'desc'))
   const snap = await getDocs(q)
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Pago))
 }
@@ -162,32 +184,10 @@ export async function createPago(data: Omit<Pago, 'id' | 'creadoEn'>): Promise<s
   return ref.id
 }
 
-export interface Gasto {
-  id?: string
-  descripcion: string
-  monto: number
-  fecha: string
-  responsable: string
-  gymId: string
-  creadoEn?: Timestamp
-}
+// ─── Caja y Gastos ────────────────────────────────────────────────────────────
 
-export interface CajaSesion {
-  id?: string
-  fechaApertura: string
-  montoInicial: number
-  fechaCierre?: string
-  montoFinal?: number
-  diferencia?: number
-  responsableApertura: string
-  responsableCierre?: string
-  estado: 'abierta' | 'cerrada'
-  gymId: string
-}
-
-// ─── Accesos ──────────────────────────────────────────────────────────────────
-export async function getGastos(): Promise<Gasto[]> {
-  const q = query(collection(db, 'gastos'), where('gymId', '==', GYM_ID), orderBy('fecha', 'desc'))
+export async function getGastos(gymId: string): Promise<Gasto[]> {
+  const q = query(collection(db, 'gastos'), where('gymId', '==', gymId), orderBy('fecha', 'desc'))
   const snap = await getDocs(q)
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Gasto))
 }
@@ -200,8 +200,8 @@ export async function createGasto(data: Omit<Gasto, 'id' | 'creadoEn'>): Promise
   return ref.id
 }
 
-export async function getCajaSesionAbierta(): Promise<CajaSesion | null> {
-  const q = query(collection(db, 'caja_sesiones'), where('gymId', '==', GYM_ID), where('estado', '==', 'abierta'))
+export async function getCajaSesionAbierta(gymId: string): Promise<CajaSesion | null> {
+  const q = query(collection(db, 'caja_sesiones'), where('gymId', '==', gymId), where('estado', '==', 'abierta'))
   const snap = await getDocs(q)
   if (snap.empty) return null
   return { id: snap.docs[0].id, ...snap.docs[0].data() } as CajaSesion
@@ -217,12 +217,12 @@ export async function cerrarCaja(id: string, data: Partial<CajaSesion>): Promise
 }
 
 // ─── Accesos ──────────────────────────────────────────────────────────────────
-export async function getAccesosHoy(): Promise<Acceso[]> {
+export async function getAccesosHoy(gymId: string): Promise<Acceso[]> {
   const hoy = new Date()
   hoy.setHours(0, 0, 0, 0)
   const q = query(
     collection(db, 'accesos'),
-    where('gymId', '==', GYM_ID),
+    where('gymId', '==', gymId),
     where('timestamp', '>=', hoy.toISOString()),
     orderBy('timestamp', 'desc')
   )
@@ -234,19 +234,20 @@ export async function registrarAcceso(data: Omit<Acceso, 'id'>): Promise<void> {
   await addDoc(collection(db, 'accesos'), data)
 }
 
-export async function getGymConfig(): Promise<GymConfig | null> {
-  const snap = await getDoc(doc(db, 'gyms', GYM_ID))
+// ─── Configuración y Marca Blanca ─────────────────────────────────────────────
+export async function getGymConfig(gymId: string): Promise<GymConfig | null> {
+  const snap = await getDoc(doc(db, 'gyms', gymId))
   if (!snap.exists()) return null
   return { id: snap.id, ...snap.data() } as GymConfig
 }
 
-export async function updateGymConfig(data: Partial<GymConfig>): Promise<void> {
-  await updateDoc(doc(db, 'gyms', GYM_ID), data)
+export async function updateGymConfig(gymId: string, data: Partial<GymConfig>): Promise<void> {
+  await updateDoc(doc(db, 'gyms', gymId), data)
 }
 
 // ─── Staff ──────────────────────────────────────────────────────────────────
-export async function getStaff(): Promise<Staff[]> {
-  const q = query(collection(db, 'staff'), where('gymId', '==', GYM_ID))
+export async function getStaff(gymId: string): Promise<Staff[]> {
+  const q = query(collection(db, 'staff'), where('gymId', '==', gymId))
   const snap = await getDocs(q)
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Staff))
 }

@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useGymConfig } from '@/components/GymProvider'
-import { updateGymConfig, getStaff, createStaff, deleteStaff, Staff, GYM_ID } from '@/lib/firestore'
+import { updateGymConfig, getStaff, createStaff, deleteStaff, Staff } from '@/lib/firestore'
 import { auth } from '@/lib/firebase'
+import { useAuth } from '@/components/auth/AuthProvider'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 
 export default function ConfiguracionPage() {
+  const { gymId } = useAuth()
   const { config, refetchConfig, loading: configLoading } = useGymConfig()
   const [tab, setTab] = useState<'marca' | 'general' | 'staff'>('marca')
   
@@ -46,11 +48,12 @@ export default function ConfiguracionPage() {
     if (tab === 'staff') {
       fetchStaff()
     }
-  }, [tab])
+  }, [tab, gymId])
 
   const fetchStaff = async () => {
+    if (!gymId) return
     setLoadingStaff(true)
-    const data = await getStaff()
+    const data = await getStaff(gymId)
     setStaff(data)
     setLoadingStaff(false)
   }
@@ -62,9 +65,10 @@ export default function ConfiguracionPage() {
   }
 
   const guardarConfig = async () => {
+    if (!gymId) return
     setGuardando(true)
     try {
-      await updateGymConfig({
+      await updateGymConfig(gymId, {
         nombre: gymNombre,
         colores: colores,
         direccion: general.direccion,
@@ -101,7 +105,7 @@ export default function ConfiguracionPage() {
         email: formStaff.email,
         rol: formStaff.rol as 'admin' | 'recepcionista',
         estado: 'activo',
-        gymId: GYM_ID
+        gymId: gymId
       })
       
       alert('Empleado creado con éxito. Por favor vuelve a iniciar sesión si el sistema te desconectó.')

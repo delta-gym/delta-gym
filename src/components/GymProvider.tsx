@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { getGymConfig, GymConfig } from '@/lib/firestore'
+import { useAuth } from '@/components/auth/AuthProvider'
 
 interface GymContextType {
   config: GymConfig | null
@@ -16,12 +17,7 @@ const GymContext = createContext<GymContextType>({
 })
 
 const defaultConfig: GymConfig = {
-  nombre: 'Gimnasio Delta',
-  logo: '',
-  direccion: '',
-  telefono: '',
-  whatsapp: '',
-  emailSoporte: '',
+  nombre: 'Cargando...',
   colores: {
     primary: '#2563eb',
     secondary: '#475569',
@@ -33,14 +29,19 @@ const defaultConfig: GymConfig = {
 export function GymProvider({ children }: { children: React.ReactNode }) {
   const [config, setConfig] = useState<GymConfig | null>(null)
   const [loading, setLoading] = useState(true)
+  const { gymId, loading: authLoading } = useAuth()
 
   const fetchConfig = async () => {
+    if (!gymId) {
+      setLoading(false)
+      return
+    }
+    
     try {
-      const data = await getGymConfig()
+      const data = await getGymConfig(gymId)
       const finalConfig = data || defaultConfig
       setConfig(finalConfig)
 
-      // Inyectar variables CSS globales
       if (finalConfig.colores) {
         document.documentElement.style.setProperty('--primary', finalConfig.colores.primary)
         document.documentElement.style.setProperty('--secondary', finalConfig.colores.secondary)
@@ -56,8 +57,10 @@ export function GymProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    fetchConfig()
-  }, [])
+    if (!authLoading) {
+      fetchConfig()
+    }
+  }, [gymId, authLoading])
 
   return (
     <GymContext.Provider value={{ config, loading, refetchConfig: fetchConfig }}>
