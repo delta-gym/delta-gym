@@ -105,7 +105,7 @@ export default function ConfiguracionPage() {
         email: formStaff.email,
         rol: formStaff.rol as 'admin' | 'recepcionista',
         estado: 'activo',
-        gymId: gymId
+        gymId: gymId || ''
       })
       
       alert('Empleado creado con éxito. Por favor vuelve a iniciar sesión si el sistema te desconectó.')
