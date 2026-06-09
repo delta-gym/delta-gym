@@ -174,11 +174,6 @@ export default function SocioDetailClient({ socioId }: { socioId: string }) {
         <>
           {/* Header Card */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
-            <img
-              src={socio.foto}
-              alt={socio.nombre}
-              className="w-24 h-24 rounded-2xl bg-slate-100 shrink-0"
-            />
             <div className="flex-1 space-y-2">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-xl font-bold">{socio.nombre}</h1>
