@@ -174,7 +174,6 @@ export default function SocioDetailClient({ socio }: { socio: Socio }) {
             <p className="text-xs text-slate-400">Ingresó el {new Date(socio.fechaIngreso).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
         </div>
-      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Membresía */}
