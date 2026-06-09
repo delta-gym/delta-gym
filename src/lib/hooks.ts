@@ -161,3 +161,31 @@ export function useCajaSesion() {
   
   return { sesion, loading, refetch: fetch }
 }
+
+// ─── Hook: Seguimiento Físico (Mediciones) ────────────────────────────────────
+export function useMediciones(socioId: string) {
+  const [mediciones, setMediciones] = useState<Medicion[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { gymId, loading: authLoading } = useAuth()
+
+  const fetch = useCallback(async () => {
+    if (!gymId || !socioId) return
+    setLoading(true)
+    try {
+      const data = await getMedicionesSocio(socioId)
+      setMediciones(data)
+    } catch (e) {
+      setError('Error al cargar mediciones')
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }, [gymId, socioId])
+
+  useEffect(() => { 
+    if (!authLoading && socioId) fetch() 
+  }, [fetch, authLoading, socioId])
+  
+  return { mediciones, loading, error, refetch: fetch }
+}
