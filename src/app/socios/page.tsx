@@ -157,6 +157,20 @@ export default function SociosPage() {
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                           </Link>
+                          {socio.telefono && (
+                            <button
+                              onClick={() => {
+                                const msg = socio.montoPendiente > 0 
+                                  ? `Hola ${socio.nombre}, te contactamos de Gimnasio Delta. Te recordamos que tu plan ${socio.planActual} registra una deuda pendiente de $${socio.montoPendiente}.`
+                                  : `Hola ${socio.nombre}, `;
+                                window.open(`https://wa.me/${socio.telefono.replace(/\D/g, '').length === 9 ? '56' : ''}${socio.telefono.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank')
+                              }}
+                              className="p-1.5 hover:bg-[#25D366]/10 text-[#25D366] rounded-lg transition"
+                              title="Enviar WhatsApp"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 9.8 19.79 19.79 0 0 1 1 1.18A2 2 0 0 1 2.96 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 8.3a16 16 0 0 0 5.61 5.61l1.37-1.17a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            </button>
+                          )}
                           {socio.montoPendiente > 0 && (
                             <span className="text-xs text-red-500 font-medium">
                               Debe ${socio.montoPendiente.toLocaleString()}

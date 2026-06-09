@@ -169,7 +169,7 @@ export default function SocioDetailClient({ socioId }: { socioId: string }) {
       </div>
 
       {activeTab === 'fisico' ? (
-        <SeguimientoFisico socioId={socio.id!} socioNombre={socio.nombre} />
+        <SeguimientoFisico socioId={socio.id!} socioNombre={socio.nombre} socioTelefono={socio.telefono} />
       ) : (
         <>
           {/* Header Card */}
@@ -184,6 +184,15 @@ export default function SocioDetailClient({ socioId }: { socioId: string }) {
                 <span className="flex items-center gap-1.5">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 9.8 19.79 19.79 0 0 1 1 1.18A2 2 0 0 1 2.96 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 8.3a16 16 0 0 0 5.61 5.61l1.37-1.17a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                   {socio.telefono}
+                  {socio.telefono && (
+                    <button 
+                      onClick={() => window.open(`https://wa.me/${socio.telefono.replace(/\D/g, '').length === 9 ? '56' : ''}${socio.telefono.replace(/\D/g, '')}?text=Hola%20${socio.nombre}`, '_blank')}
+                      className="ml-1 text-[#25D366] hover:text-[#20bd5a] transition"
+                      title="Enviar WhatsApp"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 9.8 19.79 19.79 0 0 1 1 1.18A2 2 0 0 1 2.96 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 8.3a16 16 0 0 0 5.61 5.61l1.37-1.17a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </button>
+                  )}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>

@@ -6,7 +6,7 @@ import { createMedicion, deleteMedicion, Medicion } from '@/lib/firestore'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-export default function SeguimientoFisico({ socioId, socioNombre }: { socioId: string; socioNombre: string }) {
+export default function SeguimientoFisico({ socioId, socioNombre, socioTelefono }: { socioId: string; socioNombre: string; socioTelefono?: string }) {
   const { gymId } = useAuth()
   const { mediciones, refetch, loading } = useMediciones(socioId)
   
@@ -118,6 +118,26 @@ export default function SeguimientoFisico({ socioId, socioNombre }: { socioId: s
 
   if (loading) return <div className="text-sm text-slate-500 p-5">Cargando mediciones...</div>
 
+  const handleShareWhatsApp = () => {
+    if (!socioTelefono) {
+      alert('El socio no tiene número de teléfono registrado.')
+      return
+    }
+    if (mediciones.length === 0) {
+      alert('No hay mediciones para compartir.')
+      return
+    }
+    
+    const last = mediciones[mediciones.length - 1]
+    const formatPhone = socioTelefono.replace(/\D/g, '')
+    const phoneWithCode = formatPhone.length === 9 ? `56${formatPhone}` : formatPhone // Default a Chile si tiene 9 digitos
+    
+    const msg = `¡Hola ${socioNombre}! 🏋️‍♂️\n\nAquí tienes el resumen de tu última medición física (${last.fecha}):\n\n⚖️ Peso: ${last.peso} kg\n📏 Altura: ${last.altura} cm\n📊 IMC: ${last.imc}\n${last.porcentajeGrasa ? `🔥 % Grasa: ${last.porcentajeGrasa}%\n` : ''}\n¡Sigue así con tu progreso! 💪`
+    
+    const url = `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(msg)}`
+    window.open(url, '_blank')
+  }
+
   // Prepare data for chart
   const chartData = mediciones.map(m => ({
     name: new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
@@ -129,12 +149,21 @@ export default function SeguimientoFisico({ socioId, socioNombre }: { socioId: s
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold">Progreso de {socioNombre}</h2>
-        <button
-          onClick={handleOpenModal}
-          className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition shadow-sm"
-        >
-          + Nueva Medición
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleShareWhatsApp}
+            className="flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#20bd5a] transition shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 9.8 19.79 19.79 0 0 1 1 1.18A2 2 0 0 1 2.96 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 8.3a16 16 0 0 0 5.61 5.61l1.37-1.17a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Compartir WhatsApp
+          </button>
+          <button
+            onClick={handleOpenModal}
+            className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition shadow-sm"
+          >
+            + Nueva Medición
+          </button>
+        </div>
       </div>
 
       {mediciones.length === 0 ? (
