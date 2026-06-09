@@ -6,7 +6,9 @@ import type { Socio } from '@/lib/firestore'
 import { updateSocio, createPago } from '@/lib/firestore'
 import { usePlanes } from '@/lib/hooks'
 import { useAuth } from '@/components/auth/AuthProvider'
-import SeguimientoFisico from '@/components/socios/SeguimientoFisico'
+import dynamic from 'next/dynamic'
+
+const SeguimientoFisico = dynamic(() => import('@/components/socios/SeguimientoFisico'), { ssr: false })
 
 const estadoConfig = {
   activo: { label: 'Activo', class: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
