@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { getSocios, getPlanes, getPagos, getAccesosHoy, getGastos, getCajaSesionAbierta } from './firestore'
-import type { Socio, Plan, Pago, Acceso, Gasto, CajaSesion } from './firestore'
+import { getSocios, getPlanes, getPagos, getAccesosHoy, getGastos, getCajaSesionAbierta, getMedicionesSocio } from './firestore'
+import type { Socio, Plan, Pago, Acceso, Gasto, CajaSesion, Medicion } from './firestore'
 import { useAuth } from '@/components/auth/AuthProvider'
 
 // ─── Hook: Socios ─────────────────────────────────────────────────────────────

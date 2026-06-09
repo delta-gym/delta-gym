@@ -119,6 +119,25 @@ export interface CajaSesion {
   gymId: string
 }
 
+export interface Medicion {
+  id?: string
+  socioId: string
+  gymId: string
+  fecha: string
+  peso: number
+  altura: number
+  imc: number
+  porcentajeGrasa?: number
+  pecho?: number
+  cintura?: number
+  cadera?: number
+  bicepsRelajado?: number
+  bicepsContraido?: number
+  muslo?: number
+  pantorrilla?: number
+  creadoEn?: Timestamp
+}
+
 // ─── Notas: Ya no hay GYM_ID global hardcodeado. Todas las funciones exigen gymId. ───
 
 // ─── Socios ───────────────────────────────────────────────────────────────────
@@ -243,6 +262,30 @@ export async function getGymConfig(gymId: string): Promise<GymConfig | null> {
 
 export async function updateGymConfig(gymId: string, data: Partial<GymConfig>): Promise<void> {
   await updateDoc(doc(db, 'gyms', gymId), data)
+}
+
+// ─── Seguimiento Físico (Mediciones) ──────────────────────────────────────────
+
+export async function getMedicionesSocio(socioId: string): Promise<Medicion[]> {
+  const q = query(
+    collection(db, 'mediciones'),
+    where('socioId', '==', socioId),
+    orderBy('fecha', 'asc')
+  )
+  const snap = await getDocs(q)
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as Medicion))
+}
+
+export async function createMedicion(data: Omit<Medicion, 'id' | 'creadoEn'>): Promise<string> {
+  const ref = await addDoc(collection(db, 'mediciones'), {
+    ...data,
+    creadoEn: serverTimestamp()
+  })
+  return ref.id
+}
+
+export async function deleteMedicion(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'mediciones', id))
 }
 
 // ─── Staff ──────────────────────────────────────────────────────────────────

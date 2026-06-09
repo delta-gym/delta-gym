@@ -6,6 +6,7 @@ import type { Socio } from '@/lib/firestore'
 import { updateSocio, createPago } from '@/lib/firestore'
 import { usePlanes } from '@/lib/hooks'
 import { useAuth } from '@/components/auth/AuthProvider'
+import SeguimientoFisico from '@/components/socios/SeguimientoFisico'
 
 const estadoConfig = {
   activo: { label: 'Activo', class: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
@@ -26,6 +27,7 @@ export default function SocioDetailClient({ socio }: { socio: Socio }) {
   const [montoAbonar, setMontoAbonar] = useState<number | ''>('')
   const [diasCongelar, setDiasCongelar] = useState(7)
   const [guardando, setGuardando] = useState(false)
+  const [activeTab, setActiveTab] = useState<'resumen' | 'fisico'>('resumen')
 
   const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = e.target.value
@@ -108,18 +110,42 @@ export default function SocioDetailClient({ socio }: { socio: Socio }) {
       {/* Back */}
       <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-        Volver a socios
+        Volver
       </button>
+      {/* Tabs */}
+      <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl w-full sm:w-fit">
+        <button
+          onClick={() => setActiveTab('resumen')}
+          className={`flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium rounded-lg transition-all ${
+            activeTab === 'resumen' 
+              ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' 
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+          }`}
+        >
+          Resumen
+        </button>
+        <button
+          onClick={() => setActiveTab('fisico')}
+          className={`flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium rounded-lg transition-all ${
+            activeTab === 'fisico' 
+              ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' 
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+          }`}
+        >
+          Seguimiento Físico
+        </button>
+      </div>
 
-      {/* Profile Card */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
-        <div className="flex flex-col sm:flex-row gap-5 items-start">
-          <img
-            src={socio.foto}
-            alt={socio.nombre}
-            className="w-24 h-24 rounded-2xl bg-slate-100 shrink-0"
-          />
-          <div className="flex-1 space-y-2">
+      {activeTab === 'resumen' ? (
+        <>
+          {/* Header Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+            <img
+              src={socio.foto}
+              alt={socio.nombre}
+              className="w-24 h-24 rounded-2xl bg-slate-100 shrink-0"
+            />
+            <div className="flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-xl font-bold">{socio.nombre}</h1>
               <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${cfg.class}`}>{cfg.label}</span>
@@ -204,6 +230,10 @@ export default function SocioDetailClient({ socio }: { socio: Socio }) {
           </button>
         </div>
       </div>
+      </>
+      ) : (
+        <SeguimientoFisico socioId={socio.id!} socioNombre={socio.nombre} />
+      )}
 
       {/* Modal Renovar */}
       {modalRenovar && (
