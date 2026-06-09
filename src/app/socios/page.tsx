@@ -134,7 +134,6 @@ export default function SociosPage() {
                     <tr key={socio.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <img src={socio.foto} alt={socio.nombre} className="w-9 h-9 rounded-full bg-slate-200 shrink-0" />
                           <div>
                             <p className="font-medium text-slate-900 dark:text-white">{socio.nombre}</p>
                             <p className="text-xs text-slate-400">{socio.email}</p>
