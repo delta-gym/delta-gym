@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Socio } from '@/lib/firestore'
-import { updateSocio, createPago } from '@/lib/firestore'
+import { getSocio, updateSocio, createPago } from '@/lib/firestore'
 import { usePlanes } from '@/lib/hooks'
 import { useAuth } from '@/components/auth/AuthProvider'
 import dynamic from 'next/dynamic'
@@ -16,10 +16,19 @@ const estadoConfig = {
   moroso: { label: 'Moroso', class: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' },
 }
 
-export default function SocioDetailClient({ socio }: { socio: Socio }) {
+export default function SocioDetailClient({ socioId }: { socioId: string }) {
   const router = useRouter()
-  const cfg = estadoConfig[socio.estado]
   const { gymId } = useAuth()
+
+  const [socio, setSocio] = useState<Socio | null>(null)
+  const [loadingSocio, setLoadingSocio] = useState(true)
+
+  useEffect(() => {
+    getSocio(socioId).then(data => {
+      setSocio(data)
+      setLoadingSocio(false)
+    })
+  }, [socioId])
 
   const { planes } = usePlanes()
   const [modalRenovar, setModalRenovar] = useState(false)
@@ -30,6 +39,24 @@ export default function SocioDetailClient({ socio }: { socio: Socio }) {
   const [diasCongelar, setDiasCongelar] = useState(7)
   const [guardando, setGuardando] = useState(false)
   const [activeTab, setActiveTab] = useState<'resumen' | 'fisico'>('resumen')
+
+  if (loadingSocio) return (
+    <div className="max-w-3xl mx-auto p-8 flex items-center justify-center min-h-[300px]">
+      <div className="flex flex-col items-center gap-3 text-slate-500">
+        <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        <p className="text-sm">Cargando socio...</p>
+      </div>
+    </div>
+  )
+
+  if (!socio) return (
+    <div className="max-w-3xl mx-auto p-8 text-center">
+      <p className="text-slate-500">Socio no encontrado.</p>
+      <button onClick={() => router.back()} className="mt-4 text-primary hover:underline">Volver</button>
+    </div>
+  )
+
+  const cfg = estadoConfig[socio.estado]
 
   const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = e.target.value
@@ -79,7 +106,9 @@ export default function SocioDetailClient({ socio }: { socio: Socio }) {
       }
 
       setModalRenovar(false)
-      router.refresh()
+      // Reload socio data
+      const updated = await getSocio(socioId)
+      if (updated) setSocio(updated)
     } catch (err) {
       alert('Error al renovar: ' + err)
     } finally {
@@ -98,7 +127,8 @@ export default function SocioDetailClient({ socio }: { socio: Socio }) {
 
       await updateSocio(socio.id, { vencimiento: nuevaFecha })
       setModalCongelar(false)
-      router.refresh()
+      const updated = await getSocio(socioId)
+      if (updated) setSocio(updated)
     } catch (err) {
       alert('Error al congelar: ' + err)
     } finally {

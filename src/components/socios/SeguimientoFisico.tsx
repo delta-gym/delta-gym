@@ -70,18 +70,36 @@ export default function SeguimientoFisico({ socioId, socioNombre }: { socioId: s
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!gymId) return
+    if (!gymId) {
+      alert('Error: no se pudo obtener el ID del gimnasio. Recarga la página e intenta de nuevo.')
+      return
+    }
+    if (!form.peso || !form.altura) {
+      alert('El peso y la altura son obligatorios.')
+      return
+    }
     setGuardando(true)
     try {
       await createMedicion({
-        ...form as Omit<Medicion, 'id' | 'creadoEn'>,
         socioId,
-        gymId
+        gymId,
+        fecha: form.fecha || new Date().toISOString().split('T')[0],
+        peso: Number(form.peso),
+        altura: Number(form.altura),
+        imc: Number(form.imc) || 0,
+        porcentajeGrasa: Number(form.porcentajeGrasa) || 0,
+        pecho: Number(form.pecho) || 0,
+        cintura: Number(form.cintura) || 0,
+        cadera: Number(form.cadera) || 0,
+        bicepsRelajado: Number(form.bicepsRelajado) || 0,
+        bicepsContraido: Number(form.bicepsContraido) || 0,
+        muslo: Number(form.muslo) || 0,
+        pantorrilla: Number(form.pantorrilla) || 0,
       })
       await refetch()
       setModalOpen(false)
-    } catch (err) {
-      alert('Error al guardar medición')
+    } catch (err: any) {
+      alert('Error al guardar medición: ' + (err?.message || err))
       console.error(err)
     } finally {
       setGuardando(false)

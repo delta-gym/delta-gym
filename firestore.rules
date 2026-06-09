@@ -2,33 +2,33 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Función para obtener el gymId del usuario que hace la petición
+    // Función para obtener el gymId del usuario autenticado
     function getUserGymId() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.gymId;
     }
 
-    // Regla global de seguridad: Solo permitir lectura/escritura si el usuario está autenticado
-    // y si el documento que intenta acceder tiene su mismo gymId.
-    
-    // 1. Colección de usuarios (permitir leer/escribir su propio perfil)
+    // 1. Colección de usuarios (perfil propio)
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // 2. Colección de configuración del gimnasio
+    // 2. Configuración del gimnasio
     match /gyms/{gymId} {
-      allow read: if request.auth != null && getUserGymId() == gymId;
-      allow write: if request.auth != null && getUserGymId() == gymId;
+      allow read, write: if request.auth != null && getUserGymId() == gymId;
     }
 
-    // 3. Colecciones de datos (socios, planes, pagos, accesos, etc.)
-    // Deben coincidir con el gymId del usuario.
+    // 3. Todas las demás colecciones (socios, planes, pagos, accesos, gastos, caja, mediciones, etc.)
+    // Lectura y borrado: el gymId del documento debe coincidir con el del usuario
+    // Creación y edición: el gymId que se intenta escribir debe coincidir con el del usuario
     match /{collection}/{docId} {
       allow read, delete: if request.auth != null 
-        && getUserGymId() == resource.data.gymId;
+        && resource.data.gymId == getUserGymId();
         
-      allow create, update: if request.auth != null 
-        && getUserGymId() == request.resource.data.gymId;
+      allow create: if request.auth != null 
+        && request.resource.data.gymId == getUserGymId();
+
+      allow update: if request.auth != null 
+        && request.resource.data.gymId == getUserGymId();
     }
   }
 }
